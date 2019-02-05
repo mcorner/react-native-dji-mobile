@@ -41,4 +41,9 @@ class DJISDKManagerWrapper: NSObject {
     NSLog("START CONNECTION TO PRODUCT: %d", returnValue)
     resolve(returnValue)
   }
+  
+  @objc static func requiresMainQueueSetup() -> Bool {
+    return false
+  }
+
 }
