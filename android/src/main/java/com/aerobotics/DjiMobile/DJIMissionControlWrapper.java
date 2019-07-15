@@ -216,7 +216,7 @@ public class DJIMissionControlWrapper extends ReactContextBaseJavaModule {
     String headingString = parameters.getString("heading");
     boolean clockwise = parameters.getBoolean("clockwise");
 
-    HotpointMission hotpointMission = new HotpointMission();
+    HotpointMission hotpointMission = new NewHotpointMission();
     hotpointMission.setHotpoint(new LocationCoordinate2D(latitude, longitude));
     hotpointMission.setAltitude((float)altitude);
     hotpointMission.setRadius(radius);
