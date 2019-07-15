@@ -7,6 +7,8 @@ import android.util.Log;
 
 import com.aerobotics.DjiMobile.DJITimelineElements.VirtualStickTimelineElement;
 import com.aerobotics.DjiMobile.DJITimelineElements.WaypointMissionTimelineElement;
+import com.aerobotics.DjiMobile.NewHotpointAction;
+
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
@@ -204,7 +206,7 @@ public class DJIMissionControlWrapper extends ReactContextBaseJavaModule {
     }
   }
 
-  public HotpointAction buildHotpointAction(ReadableMap parameters) {
+  public NewHotpointAction buildHotpointAction(ReadableMap parameters) {
     ReadableMap hotpoint = parameters.getMap("hotpoint");
     double angle = parameters.getDouble("angle");
     double longitude = hotpoint.getDouble("longitude");
@@ -216,7 +218,7 @@ public class DJIMissionControlWrapper extends ReactContextBaseJavaModule {
     String headingString = parameters.getString("heading");
     boolean clockwise = parameters.getBoolean("clockwise");
 
-    HotpointMission hotpointMission = new NewHotpointMission();
+    HotpointMission hotpointMission = new HotpointMission();
     hotpointMission.setHotpoint(new LocationCoordinate2D(latitude, longitude));
     hotpointMission.setAltitude((float)altitude);
     hotpointMission.setRadius(radius);
@@ -225,7 +227,7 @@ public class DJIMissionControlWrapper extends ReactContextBaseJavaModule {
     hotpointMission.setHeading(HotpointHeading.valueOf(headingString));
     hotpointMission.setClockwise(clockwise);
 
-    return new HotpointAction(hotpointMission, (float)angle);
+    return new NewHotpointAction(hotpointMission, (int)angle);
   }
 
   public AircraftYawAction buildAircraftYawAction(ReadableMap parameters) {
