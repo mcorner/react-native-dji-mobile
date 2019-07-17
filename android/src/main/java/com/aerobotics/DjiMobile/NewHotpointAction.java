@@ -36,7 +36,7 @@ public class NewHotpointAction extends TimelineElement implements HotpointMissio
     private HotpointMission mission;
     private int angle;
     private boolean isRunning;
-    private double latitude, longitude;
+    private double latitude=0.0, longitude=0.0;
 
     private FlightControllerKey aircraftLatitudeKey = FlightControllerKey.create(FlightControllerKey.AIRCRAFT_LOCATION_LATITUDE);
     private FlightControllerKey aircraftLongitudeKey = FlightControllerKey.create(FlightControllerKey.AIRCRAFT_LOCATION_LONGITUDE);
@@ -54,7 +54,9 @@ public class NewHotpointAction extends TimelineElement implements HotpointMissio
         public void onValueChange(Object oldValue, Object newValue) {
             if (newValue instanceof Double) {
               latitude = (Double)newValue;
-              updateDroneStatus();
+              if (longitude != 0.0){
+                updateDroneStatus();
+              }
             }
         }
     };
@@ -64,14 +66,15 @@ public class NewHotpointAction extends TimelineElement implements HotpointMissio
         public void onValueChange(Object oldValue, Object newValue) {
             if (newValue instanceof Double) {
               longitude = (Double)newValue;
-              updateDroneStatus();
+              if (latitude != 0.0){
+                updateDroneStatus();
+              }
             }
         }
     };
 
     public void run(){
-        System.out.println("NewHotPoint run");
-        System.out.println("NewHotPoint hpo state: " + missionControl.getHotpointMissionOperator().getCurrentState());
+        System.out.println("dronecha NewHotPoint hpo state: " + missionControl.getHotpointMissionOperator().getCurrentState());
 
         missionControl.getHotpointMissionOperator().addListener(this);
         NewHotpointAction that = this;
@@ -97,16 +100,16 @@ public class NewHotpointAction extends TimelineElement implements HotpointMissio
         double currentHeading = (((int)SphericalUtil.computeHeading(centerLL, new LatLng(latitude,longitude))) + 360) % 360;
         double diff = Math.abs((int)currentHeading-this.angle);
 
-        System.out.println("Hotpoint current heading: " + currentHeading + " target angle: " + this.angle + " diff: " + diff);
+        System.out.println("NewHotpoint current heading: " + currentHeading + " target angle: " + this.angle + " diff: " + diff);
 
-        if ((diff < 15.0) && this.isRunning){
-            this.stop();
+        if ((diff < 10.0) && this.isRunning){
+          this.stop();
         }
     }
 
 
     public void stop() {
-        System.out.println("NewHotPoint stop");
+        System.out.println("NewHotpoint stop");
         this.isRunning = false;
         NewHotpointAction that = this;
 
