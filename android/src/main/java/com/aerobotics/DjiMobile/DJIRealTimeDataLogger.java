@@ -2,6 +2,7 @@ package com.aerobotics.DjiMobile;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
@@ -38,6 +39,8 @@ public class DJIRealTimeDataLogger extends ReactContextBaseJavaModule {
     private FlightControllerKey attitudeRollKey = FlightControllerKey.create(FlightControllerKey.ATTITUDE_ROLL);
     private FlightControllerKey attitudeYawKey = FlightControllerKey.create(FlightControllerKey.ATTITUDE_YAW);
     private CameraKey isRecordingKey = CameraKey.create(CameraKey.IS_RECORDING);
+    private FlightControllerKey ultrasonicKey = FlightControllerKey.create(FlightControllerKey.ULTRASONIC_HEIGHT_IN_METERS);
+    private FlightControllerKey compassHeadingKey = FlightControllerKey.create(FlightControllerKey.COMPASS_HEADING);
 
     private KeyListener isRecordingListener = new KeyListener() {
         @Override
@@ -46,6 +49,8 @@ public class DJIRealTimeDataLogger extends ReactContextBaseJavaModule {
                 // Check if isRecording value has changed from false to true
                 if (!((Boolean) oldValue) && (Boolean) newValue) {
                     writeStringToLogFile("camera: startCaptureVideo");
+                } else {
+                    writeStringToLogFile("camera: stopCaptureVideo");
                 }
             }
         }
@@ -96,7 +101,7 @@ public class DJIRealTimeDataLogger extends ReactContextBaseJavaModule {
         @Override
         public void onValueChange(@Nullable Object oldValue, @Nullable Object newValue) {
             if (newValue instanceof Float) {
-                writeStringToLogFile("velocity_x:" + newValue.toString());
+                writeStringToLogFile("velocity_n:" + newValue.toString());
             }
         }
     };
@@ -105,7 +110,7 @@ public class DJIRealTimeDataLogger extends ReactContextBaseJavaModule {
         @Override
         public void onValueChange(@Nullable Object oldValue, @Nullable Object newValue) {
             if (newValue instanceof Float) {
-                writeStringToLogFile("velocity_y:" + newValue.toString());
+                writeStringToLogFile("velocity_e:" + newValue.toString());
             }
         }
     };
@@ -114,7 +119,7 @@ public class DJIRealTimeDataLogger extends ReactContextBaseJavaModule {
         @Override
         public void onValueChange(@Nullable Object oldValue, @Nullable Object newValue) {
             if (newValue instanceof Float) {
-                writeStringToLogFile("velocity_z:" + newValue.toString());
+                writeStringToLogFile("velocity_d:" + newValue.toString());
             }
         }
     };
@@ -146,8 +151,29 @@ public class DJIRealTimeDataLogger extends ReactContextBaseJavaModule {
         }
     };
 
+    private KeyListener ultrasonicHeightListener = new KeyListener() {
+        @Override
+        public void onValueChange(@Nullable Object oldValue, @Nullable Object newValue) {
+            if (newValue instanceof Float) {
+                Float height = (Float) newValue;
+                writeStringToLogFile("ultrasonic_height:" + height.toString());
+            }
+        }
+    };
+
+    private KeyListener compassHeadingListener = new KeyListener() {
+        @Override
+        public void onValueChange(@Nullable Object oldValue, @Nullable Object newValue) {
+            if (newValue instanceof Float) {
+                Float compassHeading = (Float) newValue;
+                writeStringToLogFile("compass_heading:" + newValue.toString());
+            }
+        }
+    };
+
     private ReactApplicationContext reactApplicationContext;
     private File logFile;
+    private boolean isLogging = false;
 
     public DJIRealTimeDataLogger(ReactApplicationContext reactContext) {
         super(reactContext);
@@ -172,6 +198,8 @@ public class DJIRealTimeDataLogger extends ReactContextBaseJavaModule {
         KeyManager.getInstance().addListener(attitudeRollKey, attitudeRollListener);
         KeyManager.getInstance().addListener(attitudeYawKey, attitudeYawListener);
         KeyManager.getInstance().addListener(isRecordingKey, isRecordingListener);
+        KeyManager.getInstance().addListener(ultrasonicKey, ultrasonicHeightListener);
+        KeyManager.getInstance().addListener(compassHeadingKey, compassHeadingListener);
     }
 
     private void tearDownKeyListeners() {
@@ -187,6 +215,8 @@ public class DJIRealTimeDataLogger extends ReactContextBaseJavaModule {
             KeyManager.getInstance().removeListener(attitudeRollListener);
             KeyManager.getInstance().removeListener(attitudeYawListener);
             KeyManager.getInstance().removeListener(isRecordingListener);
+            KeyManager.getInstance().removeListener(ultrasonicHeightListener);
+            KeyManager.getInstance().removeListener(compassHeadingListener);
         }
     }
 
@@ -194,6 +224,7 @@ public class DJIRealTimeDataLogger extends ReactContextBaseJavaModule {
         this.createLogFile(fileName);
         this.setUpKeyListeners();
         this.recordInitialValues();
+        this.isLogging = true;
     }
 
     private void createLogFile(String fileName) {
@@ -205,6 +236,8 @@ public class DJIRealTimeDataLogger extends ReactContextBaseJavaModule {
     private void recordInitialValues() {
         this.recordModelName();
         this.recordInitialGimbalPosition();
+        this.recordInitialVelocities();
+        this.recordInitialCompassHeading();
     }
 
     private void recordModelName() {
@@ -244,9 +277,73 @@ public class DJIRealTimeDataLogger extends ReactContextBaseJavaModule {
         });
     }
 
+    private void recordInitialVelocities() {
+        KeyManager.getInstance().getValue(velocityXKey, new GetCallback() {
+            @Override
+            public void onSuccess(@NonNull Object newValue) {
+                if (newValue instanceof Float) {
+                    writeStringToLogFile("velocity_n:" + newValue.toString());
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull DJIError djiError) {
+
+            }
+        });
+        KeyManager.getInstance().getValue(velocityYKey, new GetCallback() {
+            @Override
+            public void onSuccess(@NonNull Object newValue) {
+                if (newValue instanceof Float) {
+                    writeStringToLogFile("velocity_e:" + newValue.toString());
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull DJIError djiError) {
+
+            }
+        });
+        KeyManager.getInstance().getValue(velocityZKey, new GetCallback() {
+            @Override
+            public void onSuccess(@NonNull Object newValue) {
+                if (newValue instanceof Float) {
+                    writeStringToLogFile("velocity_d:" + newValue.toString());
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull DJIError djiError) {
+
+            }
+        });
+    }
+
+    private void recordInitialCompassHeading() {
+        KeyManager.getInstance().getValue(compassHeadingKey, new GetCallback() {
+            @Override
+            public void onSuccess(@NonNull Object value) {
+                if (value instanceof Float) {
+                    float compassHeading = (Float) value;
+                    writeStringToLogFile("compass_heading:" + compassHeading);
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull DJIError djiError) {
+
+            }
+        });
+    }
+
 
     public void stopLogging() {
         this.tearDownKeyListeners();
+        this.isLogging = false;
+    }
+
+    public boolean isLogging() {
+        return isLogging;
     }
 
     private void writeStringToLogFile(String data) {

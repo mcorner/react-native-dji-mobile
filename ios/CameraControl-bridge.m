@@ -13,7 +13,13 @@
 @interface RCT_EXTERN_MODULE(CameraControlNative, NSObject)
 
 RCT_EXTERN_METHOD(
-                  setPhotoAspectRatio: (NSUInteger)photoAspectRatio
+                  setCameraMode: (NSString)cameraMode
+                  resolve:       (RCTPromiseResolveBlock)resolve
+                  reject:        (RCTPromiseRejectBlock)reject
+                  )
+
+RCT_EXTERN_METHOD(
+                  setPhotoAspectRatio: (NSString)photoAspectRatio
                   resolve:             (RCTPromiseResolveBlock)resolve
                   reject:              (RCTPromiseRejectBlock)reject
                   )
@@ -25,9 +31,45 @@ RCT_EXTERN_METHOD(
                   )
 
 RCT_EXTERN_METHOD(
-                  setExposureMode: (NSUInteger)exposureMode
+                  setExposureMode: (NSString)exposureMode
                   resolve:         (RCTPromiseResolveBlock)resolve
                   reject:          (RCTPromiseRejectBlock)reject
+                  )
+
+RCT_EXTERN_METHOD(
+                  setISO:  (NSString)iso
+                  resolve: (RCTPromiseResolveBlock)resolve
+                  reject:  (RCTPromiseRejectBlock)reject
+)
+
+RCT_EXTERN_METHOD(
+                  setShutterSpeed: (NSString)shutterSpeed
+                  resolve:         (RCTPromiseResolveBlock)resolve
+                  reject:          (RCTPromiseRejectBlock)reject
+)
+
+RCT_EXTERN_METHOD(
+                  setVideoFileFormat: (NSString)videoFileFormat
+                  resolve:            (RCTPromiseResolveBlock)resolve
+                  reject:             (RCTPromiseRejectBlock)reject
+                  )
+
+RCT_EXTERN_METHOD(
+                  setVideoFileCompressionStandard: (NSString)videoFileCompressionStandard
+                  resolve:                         (RCTPromiseResolveBlock)resolve
+                  reject:                          (RCTPromiseRejectBlock)reject
+                  )
+
+RCT_EXTERN_METHOD(
+                  setVideoResolutionAndFrameRate: (NSString)resolution
+                  frameRate:                      (NSString)frameRate
+                  resolve:                        (RCTPromiseResolveBlock)resolve
+                  reject:                         (RCTPromiseRejectBlock)reject
+                  )
+
+RCT_EXTERN_METHOD(
+                  stopRecording: (RCTPromiseResolveBlock)resolve
+                  reject:        (RCTPromiseRejectBlock)reject
                   )
 
 @end

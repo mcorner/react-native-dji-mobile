@@ -5,6 +5,8 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
+import com.aerobotics.DjiMobile.DJITimelineElements.RealTimeDataLoggerTimelineElement;
+import com.aerobotics.DjiMobile.DJITimelineElements.RunJSElementTimelineElement;
 import com.aerobotics.DjiMobile.DJITimelineElements.VirtualStickTimelineElement;
 import com.aerobotics.DjiMobile.DJITimelineElements.WaypointMissionTimelineElement;
 import com.aerobotics.DjiMobile.NewHotpointAction;
@@ -41,7 +43,6 @@ import dji.common.mission.hotpoint.HotpointMission;
 import dji.common.mission.hotpoint.HotpointHeading;
 import dji.common.mission.hotpoint.HotpointStartPoint;
 import dji.sdk.mission.timeline.actions.AircraftYawAction;
-import dji.common.model.LocationCoordinate2D;
 import dji.sdk.mission.timeline.actions.TakeOffAction;
 import dji.sdk.sdkmanager.DJISDKManager;
 
@@ -57,11 +58,14 @@ enum TimelineElementType {
   GoToAction,
   GoHomeAction,
   VirtualStickTimelineElement,
+  RecordFlightData,
+  RunJSElement,
 }
 
 public class DJIMissionControlWrapper extends ReactContextBaseJavaModule {
 
   private final ReactApplicationContext reactContext;
+  private DJIRealTimeDataLogger djiRealTimeDataLogger;
 
   public DJIMissionControlWrapper(ReactApplicationContext reactContext) {
     super(reactContext);
@@ -70,7 +74,6 @@ public class DJIMissionControlWrapper extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void scheduleElement(String timelineElementType, ReadableMap parameters, Promise promise) {
-    Log.i("REACT", "Element type " + timelineElementType);
     MissionControl missionControl = DJISDKManager.getInstance().getMissionControl();
 
     TimelineElement newElement = null;
@@ -117,6 +120,14 @@ public class DJIMissionControlWrapper extends ReactContextBaseJavaModule {
 
       case VirtualStickTimelineElement:
         newElement = buildVirtualStickTimelineElement(parameters);
+        break;
+
+        case RecordFlightData:
+        newElement = buildRealTimeDataLoggerTimelineElement(parameters);
+        break;
+
+        case RunJSElement:
+        newElement = buildRunJSElementTimelineElement(reactContext, parameters);
         break;
 
       default:
@@ -292,6 +303,17 @@ public class DJIMissionControlWrapper extends ReactContextBaseJavaModule {
     return new VirtualStickTimelineElement(parameters);
   }
 
+  public RealTimeDataLoggerTimelineElement buildRealTimeDataLoggerTimelineElement(ReadableMap parameters) {
+    if (djiRealTimeDataLogger == null) {
+      djiRealTimeDataLogger = new DJIRealTimeDataLogger(reactContext);
+    }
+    return new RealTimeDataLoggerTimelineElement(djiRealTimeDataLogger, parameters);
+  }
+
+  public RunJSElementTimelineElement buildRunJSElementTimelineElement(ReactApplicationContext reactContext, ReadableMap parameters) {
+    return new RunJSElementTimelineElement(reactContext, parameters);
+  }
+
   @ReactMethod
   public void startTimeline(Promise promise) {
     DJISDKManager.getInstance().getMissionControl().startTimeline();
@@ -351,7 +373,7 @@ public class DJIMissionControlWrapper extends ReactContextBaseJavaModule {
             eventInfo.putString("eventName", simpleName);
           }
         }
-        eventInfo.putString("eventType", timelineEvent.name());
+        eventInfo.putInt("eventType", timelineEvent.ordinal());
         eventInfo.putInt("timelineIndex", timelineIndex);
 
         if (djiError != null) {
@@ -372,6 +394,12 @@ public class DJIMissionControlWrapper extends ReactContextBaseJavaModule {
   @ReactMethod
   public void stopTimelineListener(Promise promise) {
     DJISDKManager.getInstance().getMissionControl().removeAllListeners();
+    promise.resolve(null);
+  }
+
+  @ReactMethod
+  public void setCurrentTimelineMarker(Integer currentTimelineMarker, Promise promise) {
+    DJISDKManager.getInstance().getMissionControl().setCurrentTimelineMarker(currentTimelineMarker);
     promise.resolve(null);
   }
 

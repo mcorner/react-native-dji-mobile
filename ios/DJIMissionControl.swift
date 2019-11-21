@@ -18,6 +18,8 @@ enum TimelineElement: String {
   
   case WaypointMissionTimelineElement
   case VirtualStickTimelineElement
+  case RecordFlightData
+  case RunJSElement
   
 }
 
@@ -30,7 +32,7 @@ class DJIMissionControlWrapper: NSObject {
   
   @objc(scheduleElement:parameters:resolve:reject:)
   func scheduleElement(timelineElementName: String, parameters: NSDictionary, resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
-    
+        
     guard let missionControl = DJISDKManager.missionControl() else {
       reject("Schedule Element Error", "Could not schedule element as mission control could not be loaded", nil);
       return
@@ -66,21 +68,27 @@ class DJIMissionControlWrapper: NSObject {
       
     case .VirtualStickTimelineElement:
       newElement = VirtualStickTimelineElement(parameters)
+      
+    case .RecordFlightData:
+      newElement = RecordFlightData(parameters)
+      
+    case .RunJSElement:
+      newElement = RunJSElement(parameters)
+    
     }
     
     if newElement != nil {
       let validError: Error? = newElement?.checkValidity()
       if (validError != nil) {
         reject("Schedule Element Error", validError!.localizedDescription, validError!)
-        return
+      } else {
+        let error: Error? = missionControl.scheduleElement(newElement!)
+        if (error != nil) {
+          reject("Schedule Element Error", error!.localizedDescription, error!)
+        } else {
+          resolve("DJI Mission Control: Scheduled Element")
+        }
       }
-      let error: Error? = missionControl.scheduleElement(newElement!)
-      if (error != nil) {
-        reject("Schedule Element Error", error!.localizedDescription, error!)
-        return
-      }
-      resolve("DJI Mission Control: Scheduled Element")
-      return
     }
   }
   
@@ -167,12 +175,12 @@ class DJIMissionControlWrapper: NSObject {
     let stopRecord = parameters["stopRecord"] as? Bool
     
     if (stopRecord == true) {
-      return DJIRecordVideoAction(stopRecordVideo: ())
+      return DJIRecordVideoAction.init(stopRecordVideo: ())
     } else {
       if (duration != nil) {
-        return DJIRecordVideoAction(duration: duration!)
+        return DJIRecordVideoAction.init(duration: duration!)
       } else {
-        return DJIRecordVideoAction(startRecordVideo: ())
+        return DJIRecordVideoAction.init(startRecordVideo: ())
       }
     }
   }
@@ -197,7 +205,28 @@ class DJIMissionControlWrapper: NSObject {
     
     missionControl.startTimeline()
     resolve("DJI Mission Control: Start Timeline")
-    return
+  }
+  
+  @objc(pauseTimeline:reject:)
+  func pauseTimeline(resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
+    guard let missionControl = DJISDKManager.missionControl() else {
+      reject("Start Timeline Error", "Could not pause timeline as mission control could not be loaded", nil);
+      return
+    }
+    
+    missionControl.pauseTimeline()
+    resolve("DJI Mission Control: Pause Timeline")
+  }
+  
+  @objc(resumeTimeline:reject:)
+  func resumeTimeline(resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
+    guard let missionControl = DJISDKManager.missionControl() else {
+      reject("Start Timeline Error", "Could not resume timeline as mission control could not be loaded", nil);
+      return
+    }
+    
+    missionControl.resumeTimeline()
+    resolve("DJI Mission Control: Resume Timeline")
   }
   
   @objc(stopTimeline:reject:)
@@ -209,7 +238,17 @@ class DJIMissionControlWrapper: NSObject {
     
     missionControl.stopTimeline()
     resolve("DJI Mission Control: Stop Timeline")
-    return
+  }
+  
+  @objc(setCurrentTimelineMarker:resolve:reject:)
+  func setCurrentTimelineMarker(currentTimelineMarker: UInt, resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
+    guard let missionControl = DJISDKManager.missionControl() else {
+      reject("Start Timeline Error", "Could not set current timeline marker as mission control could not be loaded", nil);
+      return
+    }
+    
+    missionControl.currentTimelineMarker = currentTimelineMarker
+    resolve("DJI Mission Control: Set Current Timeline Marker")
   }
   
   @objc(startGoHome:reject:)
@@ -238,22 +277,29 @@ class DJIMissionControlWrapper: NSObject {
     missionControl.removeAllListeners()
     missionControl.addListener(self) { (timelineEvent: DJIMissionControlTimelineEvent, timelineElement: DJIMissionControlTimelineElement?, error: Error?, info: Any?) in
       var eventInfo: [String:Any] = [:]
-      var timelineIndex = Int(missionControl.currentTimelineMarker)
+      var timelineIndex = -1 // Any general timeline events get an index of -1
       
-      if (timelineElement == nil) { // This is a general timeline event (timeline start/stop, etc.)
-        timelineIndex = -1
-      } else {
-        eventInfo["eventName"] = String(describing: type(of: timelineElement!))
+      if (timelineEvent.rawValue == 2) { // Skip any "Progressed events as they send uneccessary clutter & overload the bridge
+        return
       }
       
       eventInfo["eventType"] = timelineEvent.rawValue
+      
+      if (timelineElement != nil) { // timelineElement is nil if it is a general timeline event (start timeline, stop, etc.)
+        timelineIndex = Int(missionControl.currentTimelineMarker)
+        eventInfo["eventName"] = String(describing: type(of: timelineElement!))
+      }
       eventInfo["timelineIndex"] = timelineIndex
       
       if (error != nil) {
         eventInfo["error"] = error!.localizedDescription
       }
       
-      EventSender.sendReactEvent(type: "missionControlEvent", value: eventInfo)
+      if (info != nil) {
+        eventInfo["info"] = info
+      }
+      
+      EventSender.sendReactEvent(type: "missionControlEvent", value: eventInfo, realtime: true)
       
     }
     

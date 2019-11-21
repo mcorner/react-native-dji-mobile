@@ -7,8 +7,6 @@
 
 #import <Foundation/Foundation.h>
 #import <React/RCTBridgeModule.h>
-//#import <React/RCTEventEmitter.h>
-
 
 @interface RCT_EXTERN_MODULE(DJIMobile, NSObject)
 
@@ -18,35 +16,32 @@ RCT_EXTERN_METHOD(
                   )
 
 RCT_EXTERN_METHOD(
-                  registerAppAndUseBridge:  (NSString)bridgeIp
-                  resolve:                  (RCTPromiseResolveBlock)resolve
-                  reject:                   (RCTPromiseRejectBlock)reject
-                  )
-
-RCT_EXTERN_METHOD(
-                  startRecordRealTimeData: (NSString) fileName
+                  registerAppAndUseBridge: (NSString)bridgeIp
                   resolve:                 (RCTPromiseResolveBlock)resolve
                   reject:                  (RCTPromiseRejectBlock)reject
                   )
 
 RCT_EXTERN_METHOD(
-                  stopRecordRealTimeData: (RCTPromiseResolveBlock)resolve
-                  reject:                 (RCTPromiseRejectBlock)reject
+                  limitEventFrequency: (nonnull NSNumber)frequency
+                  resolve:             (RCTPromiseResolveBlock)resolve
+                  reject:              (RCTPromiseRejectBlock)reject
                   )
 
 RCT_EXTERN_METHOD(
-                  startProductConnectionListener: (RCTPromiseResolveBlock)resolve
-                  reject:                         (RCTPromiseRejectBlock)reject
+                  startEventListener: (NSString)eventName
+                  resolve:            (RCTPromiseResolveBlock)resolve
+                  reject:             (RCTPromiseRejectBlock)reject
                   )
 
 RCT_EXTERN_METHOD(
-                  startBatteryPercentChargeRemainingListener: (RCTPromiseResolveBlock)resolve
-                  reject:                                     (RCTPromiseRejectBlock)reject
+                  startRecordFlightData: (NSString)fileName
+                  resolve:               (RCTPromiseResolveBlock)resolve
+                  reject:                (RCTPromiseRejectBlock)reject
                   )
 
 RCT_EXTERN_METHOD(
-                  startAircraftLocationListener: (RCTPromiseResolveBlock)resolve
-                  reject:                        (RCTPromiseRejectBlock)reject
+                  stopRecordFlightData: (RCTPromiseResolveBlock)resolve
+                  reject:               (RCTPromiseRejectBlock)reject
                   )
 
 RCT_EXTERN_METHOD(
@@ -60,7 +55,41 @@ RCT_EXTERN_METHOD(
                   )
 
 RCT_EXTERN_METHOD(
-                  startAircraftCompassHeadingListener: (RCTPromiseResolveBlock)resolve
+                  getFlightLogPath: (RCTPromiseResolveBlock)resolve
+                  reject:           (RCTPromiseRejectBlock)reject
+                  )
+
+RCT_EXTERN_METHOD(
+                  startFlightLogListener: (RCTPromiseResolveBlock)resolve
+                  reject:                 (RCTPromiseRejectBlock)reject
+                  )
+
+RCT_EXTERN_METHOD(
+                  stopFlightLogListener: (RCTPromiseResolveBlock)resolve
+                  reject:                (RCTPromiseRejectBlock)reject
+                  )
+
+RCT_EXTERN_METHOD(
+                  setCollisionAvoidanceEnabled: (BOOL)enabled
+                  resolve:                      (RCTPromiseResolveBlock)resolve
+                  reject:                       (RCTPromiseRejectBlock)reject
+                  )
+
+RCT_EXTERN_METHOD(
+                  setVirtualStickAdvancedModeEnabled: (BOOL)enabled
+                  resolve:                            (RCTPromiseResolveBlock)resolve
+                  reject:                             (RCTPromiseRejectBlock)reject
+                  )
+
+RCT_EXTERN_METHOD(
+                  setLandingProtectionEnabled: (BOOL)enabled
+                  resolve:                     (RCTPromiseResolveBlock)resolve
+                  reject:                      (RCTPromiseRejectBlock)reject
+                  )
+
+RCT_EXTERN_METHOD(
+                  setVisionAssistedPositioningEnabled: (BOOL)enabled
+                  resolve:                             (RCTPromiseResolveBlock)resolve
                   reject:                              (RCTPromiseRejectBlock)reject
                   )
 
@@ -70,9 +99,9 @@ RCT_EXTERN_METHOD(
                   )
 
 RCT_EXTERN_METHOD(
-                  stopKeyListener: (NSString)keyString
-                  resolve:         (RCTPromiseResolveBlock)resolve
-                  reject:          (RCTPromiseRejectBlock)reject
+                  stopEventListener: (NSString)keyString
+                  resolve:           (RCTPromiseResolveBlock)resolve
+                  reject:            (RCTPromiseRejectBlock)reject
                   )
 
 RCT_EXTERN_METHOD(

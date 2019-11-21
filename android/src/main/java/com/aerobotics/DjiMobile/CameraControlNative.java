@@ -8,7 +8,9 @@ import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.ReadableMap;
-
+import com.facebook.react.bridge.WritableArray;
+import com.facebook.react.bridge.WritableNativeArray;
+import dji.common.camera.ResolutionAndFrameRate;
 import dji.common.camera.SettingsDefinitions;
 import dji.common.camera.WhiteBalance;
 import dji.common.error.DJIError;
@@ -181,6 +183,164 @@ public class CameraControlNative extends ReactContextBaseJavaModule {
             promise.reject("CameraControlNative: stopRecording failed to stop recording");
         }
       });
+    }
+
+    @ReactMethod
+    public void setVideoFileFormat(String videoFileFormat, final Promise promise) {
+        DJIKey videoFileFormatKey = CameraKey.create(CameraKey.VIDEO_FILE_FORMAT);
+        DJISDKManager.getInstance().getKeyManager().setValue(videoFileFormatKey, SettingsDefinitions.VideoFileFormat.valueOf(videoFileFormat), new SetCallback() {
+            @Override
+            public void onSuccess() {
+                promise.resolve("CameraControlNative: Video file format set successfully");
+            }
+
+            @Override
+            public void onFailure(@NonNull DJIError djiError) {
+                promise.reject("CameraControlNative: Failed to set Video file format " + djiError.getDescription());
+            }
+        });
+    }
+
+    @ReactMethod
+    public void setVideoFileCompressionStandard(String videoFileCompressionStandard, final Promise promise) {
+        DJIKey videoFileCompressionStandardKey = CameraKey.create(CameraKey.VIDEO_FILE_COMPRESSION_STANDARD);
+        DJISDKManager.getInstance().getKeyManager().setValue(videoFileCompressionStandardKey, SettingsDefinitions.VideoFileCompressionStandard.valueOf(videoFileCompressionStandard), new SetCallback() {
+            @Override
+            public void onSuccess() {
+                promise.resolve("CameraControlNative: Video file compression standard set successfully");
+            }
+
+            @Override
+            public void onFailure(@NonNull DJIError djiError) {
+                promise.reject("CameraControlNative: Failed to set Video file compression standard " + djiError.getDescription());
+            }
+        });
+    }
+
+    @ReactMethod
+    public void setVideoResolutionAndFrameRate(String resolution, String frameRate, final Promise promise) {
+        DJIKey videoResolutionAndFrameRateKey = CameraKey.create(CameraKey.RESOLUTION_FRAME_RATE);
+        ResolutionAndFrameRate resolutionAndFrameRate = new ResolutionAndFrameRate(SettingsDefinitions.VideoResolution.valueOf(resolution), SettingsDefinitions.VideoFrameRate.valueOf(frameRate));
+        DJISDKManager.getInstance().getKeyManager().setValue(videoResolutionAndFrameRateKey, resolutionAndFrameRate, new SetCallback() {
+            @Override
+            public void onSuccess() {
+                Log.i("REACT", "videoSet");
+                promise.resolve("CameraControlNative: Video file resolution and frame rate set successfully");
+            }
+
+            @Override
+            public void onFailure(@NonNull DJIError djiError) {
+                Log.i("REACT", djiError.getDescription());
+                promise.reject("CameraControlNativeError", "CameraControlNative: Failed to set video resolution and frame rate " + djiError.getDescription());
+            }
+        });
+    }
+
+    @ReactMethod
+    public void getVideoResolutionAndFrameRateRange(final Promise promise) {
+        DJIKey videoResolutionAndFrameRateRange = CameraKey.create(CameraKey.VIDEO_RESOLUTION_FRAME_RATE_RANGE);
+        DJISDKManager.getInstance().getKeyManager().getValue(videoResolutionAndFrameRateRange, new GetCallback() {
+            @Override
+            public void onSuccess(@NonNull Object value) {
+                if (value instanceof ResolutionAndFrameRate[]) {
+                    ResolutionAndFrameRate[] resolutionAndFrameRates = (ResolutionAndFrameRate[]) value;
+                    WritableArray array = new WritableNativeArray();
+                    for (int i = 0; i < resolutionAndFrameRates.length; i++) {
+                        ResolutionAndFrameRate resolutionAndFrameRate = resolutionAndFrameRates[i];
+                        String resolutionAndFrameRateString = resolutionAndFrameRate.toString();
+                        array.pushString(resolutionAndFrameRateString);
+                    }
+                    promise.resolve(array);
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull DJIError djiError) {
+                promise.reject("CameraControlNativeError", "CameraControlNative: Failed to get video resolution and frame rate range " + djiError.getDescription());
+            }
+        });
+    }
+
+    @ReactMethod
+    public void isSDCardInserted(final Promise promise) {
+        DJIKey sdCardIsInsertedKey = CameraKey.create(CameraKey.SDCARD_IS_INSERTED);
+        DJISDKManager.getInstance().getKeyManager().getValue(sdCardIsInsertedKey, new GetCallback() {
+            @Override
+            public void onSuccess(@NonNull Object value) {
+                if (value instanceof Boolean) {
+                    promise.resolve(value);
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull DJIError djiError) {
+                promise.reject("CameraControlNativeError", djiError.getDescription());
+            }
+        });
+    }
+
+    @ReactMethod
+    public void setISO(String iso, final Promise promise) {
+        DJIKey isoKey = CameraKey.create(CameraKey.ISO);
+        DJISDKManager.getInstance().getKeyManager().setValue(isoKey, SettingsDefinitions.ISO.valueOf(iso), new SetCallback() {
+            @Override
+            public void onSuccess() {
+                promise.resolve("CameraControlNative: ISO set successfully");
+            }
+
+            @Override
+            public void onFailure(@NonNull DJIError djiError) {
+                promise.reject("CameraControlNativeError", "CameraControlNative: Failed to set ISO " + djiError.getDescription());
+            }
+        });
+    }
+
+    @ReactMethod
+    public void setShutterSpeed(String shutterSpeed, final Promise promise) {
+        DJIKey shutterSpeedKey = CameraKey.create(CameraKey.SHUTTER_SPEED);
+        DJISDKManager.getInstance().getKeyManager().setValue(shutterSpeedKey, SettingsDefinitions.ShutterSpeed.valueOf(shutterSpeed), new SetCallback() {
+            @Override
+            public void onSuccess() {
+                promise.resolve("CameraControlNative: Shutter speed set successfully");
+            }
+
+            @Override
+            public void onFailure(@NonNull DJIError djiError) {
+                promise.reject("CameraControlNativeError", "CameraControlNative: Failed to set shutter speed " + djiError.getDescription());
+            }
+        });
+    }
+
+    @ReactMethod
+    public void setAperture(String aperture, final Promise promise) {
+        DJIKey apertureKey = CameraKey.create(CameraKey.APERTURE);
+        DJISDKManager.getInstance().getKeyManager().setValue(apertureKey, SettingsDefinitions.Aperture.valueOf(aperture), new SetCallback() {
+            @Override
+            public void onSuccess() {
+                promise.resolve("CameraControlNative: Aperture set successfully");
+            }
+
+            @Override
+            public void onFailure(@NonNull DJIError djiError) {
+                promise.reject("CameraControlNativeError", "CameraControlNative: Failed to set aperture " + djiError.getDescription());
+            }
+        });
+    }
+
+    @ReactMethod
+    public void setCameraMode(String cameraMode, final Promise promise) {
+        DJIKey cameraModeKey = CameraKey.create(CameraKey.MODE);
+        DJISDKManager.getInstance().getKeyManager().setValue(cameraModeKey, SettingsDefinitions.CameraMode.valueOf(cameraMode), new SetCallback() {
+            @Override
+            public void onSuccess() {
+                promise.resolve("CameraControlNative: Camera mode set successfully");
+            }
+
+            @Override
+            public void onFailure(@NonNull DJIError djiError) {
+                promise.reject("CameraControlNativeError", "CameraControlNative: Failed to set camera mode " + djiError.getDescription());
+            }
+        });
     }
 
 }

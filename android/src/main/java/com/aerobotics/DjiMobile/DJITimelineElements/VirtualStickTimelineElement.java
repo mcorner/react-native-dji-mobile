@@ -28,6 +28,7 @@ import dji.keysdk.callback.KeyListener;
 import dji.sdk.flightcontroller.FlightController;
 import dji.sdk.mission.MissionControl;
 import dji.sdk.mission.timeline.TimelineElement;
+import dji.sdk.mission.timeline.actions.MissionAction;
 import dji.sdk.products.Aircraft;
 import dji.sdk.sdkmanager.DJISDKManager;
 
@@ -67,7 +68,7 @@ interface CompletionCallback {
   void complete(@Nullable DJIError djiError);
 }
 
-public class VirtualStickTimelineElement extends TimelineElement {
+public class VirtualStickTimelineElement extends MissionAction {
 
   private double CONTROLLER_STICK_LIMIT = 660.0;
   private double END_TRIGGER_TIMER_UPDATE_SECONDS = 0.1;
@@ -81,7 +82,6 @@ public class VirtualStickTimelineElement extends TimelineElement {
   private Double timerEndTime;
 
   private Float ultrasonicEndDistance;
-  private boolean isUltrasonicEnabled = false;
 
   private boolean doNotStopVirtualStickOnEnd = false;
   private boolean waitForControlSticksReleaseOnEnd = false;
@@ -106,44 +106,8 @@ public class VirtualStickTimelineElement extends TimelineElement {
 
   private ArrayList<KeyListener> runningKeyListeners = new ArrayList<KeyListener>();
 
-  private TimerTask sendVirtualStickDataBlock = new TimerTask() {
-    @Override
-    public void run() {
-      FlightController flightController = ((Aircraft)DJISDKManager.getInstance().getProduct()).getFlightController();
-      double pitch = baseVirtualStickControlValues.get(VirtualStickControl.pitch) + virtualStickAdjustmentValues.get(VirtualStickControl.pitch);
-      double roll = baseVirtualStickControlValues.get(VirtualStickControl.roll) + virtualStickAdjustmentValues.get(VirtualStickControl.roll);
-      double yaw = baseVirtualStickControlValues.get(VirtualStickControl.yaw) + virtualStickAdjustmentValues.get(VirtualStickControl.yaw);
-      double verticalThrottle = baseVirtualStickControlValues.get(VirtualStickControl.verticalThrottle) + virtualStickAdjustmentValues.get(VirtualStickControl.verticalThrottle);
-
-      flightController.sendVirtualStickFlightControlData(new FlightControlData(
-        // In the coordinate system we use for the drone, roll and pitch are swapped
-        (float)roll,
-        (float)pitch,
-        (float)yaw,
-        (float)verticalThrottle
-      ), null);
-    }
-  };
-
-  private TimerTask endTriggerTimerBlock = new TimerTask() {
-    @Override
-    public void run() {
-
-      secondsUntilEndTrigger -= END_TRIGGER_TIMER_UPDATE_SECONDS;
-
-      if (secondsUntilEndTrigger <= 0) {
-        sendVirtualStickDataTimer.cancel();
-        endTriggerTimer.cancel();
-        cleanUp(new CompletionCallback() {
-          @Override
-          public void complete(@Nullable DJIError djiError) {
-            DJISDKManager.getInstance().getMissionControl().onFinishWithError(self, djiError);
-          }
-        });
-      }
-
-    }
-  };
+  private TimerTask sendVirtualStickDataBlock;
+  private TimerTask endTriggerTimerBlock;
 
   public VirtualStickTimelineElement(ReadableMap parameters) {
 
@@ -270,7 +234,7 @@ public class VirtualStickTimelineElement extends TimelineElement {
     for (KeyListener runningListener : runningKeyListeners) {
       DJISDKManager.getInstance().getKeyManager().removeListener(runningListener);
     }
-
+    final MissionControl missionControl = DJISDKManager.getInstance().getMissionControl();
     if (stopExistingVirtualStick != true && doNotStopVirtualStickOnEnd == true) {
       completionCallback.complete(null);
     } else {
@@ -278,6 +242,7 @@ public class VirtualStickTimelineElement extends TimelineElement {
         @Override
         public void complete(@Nullable DJIError djiError) {
           completionCallback.complete(djiError);
+          missionControl.onStopWithError(self, djiError);
         }
       });
     }
@@ -297,14 +262,11 @@ public class VirtualStickTimelineElement extends TimelineElement {
     DJISDKManager.getInstance().getKeyManager().getValue(isUltrasonicBeingUsedKey, new GetCallback() {
       @Override
       public void onSuccess(@NonNull Object o) {
-        isUltrasonicEnabled = true;
         completionCallback.complete(null);
-
       }
 
       @Override
       public void onFailure(@NonNull DJIError djiError) {
-        isUltrasonicEnabled = false;
         completionCallback.complete(djiError);
 
       }
@@ -337,49 +299,101 @@ public class VirtualStickTimelineElement extends TimelineElement {
 
   @Override
   public void run() {
-    FlightController flightController = ((Aircraft)DJISDKManager.getInstance().getProduct()).getFlightController();
+    final FlightController flightController = ((Aircraft)DJISDKManager.getInstance().getProduct()).getFlightController();
     final MissionControl missionControl = DJISDKManager.getInstance().getMissionControl();
-    // Using velocity and body for controlMode and coordinateSystem respectively means that a positive pitch corresponds to a roll to the right,
-    // and a positive roll corresponds to a pitch forwards, THIS IS THE DJI SDK AND WE HAVE TO LIVE WITH IT
-    flightController.setRollPitchCoordinateSystem(FlightCoordinateSystem.BODY);
-    flightController.setRollPitchControlMode(RollPitchControlMode.VELOCITY);
-    flightController.setYawControlMode(YawControlMode.ANGULAR_VELOCITY);
-    flightController.setVerticalControlMode(VerticalControlMode.VELOCITY);
-    if (stopExistingVirtualStick == true) {
-      cleanUp(new CompletionCallback() {
-        @Override
-        public void complete(@Nullable DJIError djiError) {
-          missionControl.onFinishWithError(self, djiError);
-        }
-      });
-
-    } else {
-      flightController.setVirtualStickModeEnabled(true, new CommonCallbacks.CompletionCallback() {
-        @Override
-        public void onResult(DJIError djiError) {
-          if (djiError != null) {
-            missionControl.onStartWithError(self, djiError);
-
-          } else {
-            sendVirtualStickDataTimer = new Timer();
-            sendVirtualStickDataTimer.scheduleAtFixedRate(sendVirtualStickDataBlock, 0, 50);
-            if (endTrigger == EndTrigger.timer && timerEndTime != null) {
-              endTriggerTimer = new Timer();
-              // NB if the period
-              endTriggerTimer.scheduleAtFixedRate(endTriggerTimerBlock, 0, (long)(END_TRIGGER_TIMER_UPDATE_SECONDS * 1000));
-            } else if (endTrigger == EndTrigger.ultrasonic && ultrasonicEndDistance != null) {
-              isUltrasonicEnabled(new CompletionCallback() {
+    if (flightController != null) {
+        // Using velocity and body for controlMode and coordinateSystem respectively means that a positive pitch corresponds to a roll to the right,
+        // and a positive roll corresponds to a pitch forwards, THIS IS THE DJI SDK AND WE HAVE TO LIVE WITH IT
+        flightController.setRollPitchCoordinateSystem(FlightCoordinateSystem.BODY);
+        flightController.setRollPitchControlMode(RollPitchControlMode.VELOCITY);
+        flightController.setYawControlMode(YawControlMode.ANGULAR_VELOCITY);
+        flightController.setVerticalControlMode(VerticalControlMode.VELOCITY);
+        if (stopExistingVirtualStick == true) {
+            cleanUp(new CompletionCallback() {
                 @Override
                 public void complete(@Nullable DJIError djiError) {
-                  if (djiError == null && isUltrasonicEnabled) {
-                    stopAtUltrasonicHeight();
-                  }
+                    missionControl.onFinishWithError(self, djiError);
                 }
-              });
-            }
-          }
+            });
+
+        } else {
+            flightController.setVirtualStickModeEnabled(true, new CommonCallbacks.CompletionCallback() {
+                @Override
+                public void onResult(DJIError djiError) {
+                    if (djiError != null) {
+                        missionControl.onStartWithError(self, djiError);
+                    } else {
+                        missionControl.onStart(self);
+                        sendVirtualStickDataTimer = new Timer();
+                        sendVirtualStickDataBlock = new TimerTask() {
+                            @Override
+                            public void run() {
+                                try {
+                                    double pitch = baseVirtualStickControlValues.get(VirtualStickControl.pitch) + virtualStickAdjustmentValues.get(VirtualStickControl.pitch);
+                                    double roll = baseVirtualStickControlValues.get(VirtualStickControl.roll) + virtualStickAdjustmentValues.get(VirtualStickControl.roll);
+                                    double yaw = baseVirtualStickControlValues.get(VirtualStickControl.yaw) + virtualStickAdjustmentValues.get(VirtualStickControl.yaw);
+                                    double verticalThrottle = baseVirtualStickControlValues.get(VirtualStickControl.verticalThrottle) + virtualStickAdjustmentValues.get(VirtualStickControl.verticalThrottle);
+
+                                    flightController.sendVirtualStickFlightControlData(new FlightControlData(
+                                            // In the coordinate system we use for the drone, roll and pitch are swapped
+                                            (float) roll,
+                                            (float) pitch,
+                                            (float) yaw,
+                                            (float) verticalThrottle
+                                    ), null);
+                                } catch (NullPointerException e) {
+                                    Log.e("REACT", "sendVirtualStickDataBlock Error");
+                                }
+                            }
+                        };
+                        sendVirtualStickDataTimer.scheduleAtFixedRate(sendVirtualStickDataBlock, 0, 50);
+                        if (endTrigger == EndTrigger.timer && timerEndTime != null) {
+                            endTriggerTimer = new Timer();
+                            // NB if the period
+                            endTriggerTimerBlock = new TimerTask() {
+                                @Override
+                                public void run() {
+
+                                    secondsUntilEndTrigger -= END_TRIGGER_TIMER_UPDATE_SECONDS;
+
+                                    if (secondsUntilEndTrigger <= 0) {
+                                        sendVirtualStickDataTimer.cancel();
+                                        endTriggerTimer.cancel();
+                                        cleanUp(new CompletionCallback() {
+                                            @Override
+                                            public void complete(@Nullable DJIError djiError) {
+                                                DJISDKManager.getInstance().getMissionControl().onFinishWithError(self, djiError);
+                                            }
+                                        });
+                                    }
+
+                                }
+                            };
+                            endTriggerTimer.scheduleAtFixedRate(endTriggerTimerBlock, 0, (long) (END_TRIGGER_TIMER_UPDATE_SECONDS * 1000));
+                        } else if (endTrigger == EndTrigger.ultrasonic && ultrasonicEndDistance != null) {
+                            isUltrasonicEnabled(new CompletionCallback() {
+                                @Override
+                                public void complete(@Nullable DJIError djiError) {
+                                    if (djiError == null) {
+                                        stopAtUltrasonicHeight();
+                                    } else {
+                                        sendVirtualStickDataTimer.cancel();
+                                        cleanUp(new CompletionCallback() {
+                                            @Override
+                                            public void complete(@Nullable DJIError djiError) {
+                                                DJISDKManager.getInstance().getMissionControl().onProgressWithError(self, djiError);
+                                            }
+                                        });
+                                    }
+                                }
+                            });
+                        }
+                    }
+                }
+            });
         }
-      });
+    } else {
+        missionControl.onStartWithError(self, DJIError.COMMON_EXECUTION_FAILED);
     }
 
   }
@@ -392,25 +406,68 @@ public class VirtualStickTimelineElement extends TimelineElement {
   @Override
   public void pause() {
     super.pause();
-    sendVirtualStickDataBlock.cancel();
-    endTriggerTimer.cancel();
+    sendVirtualStickDataTimer.cancel();
+    if (endTriggerTimer != null) {
+      endTriggerTimer.cancel();
+    }
   }
 
   @Override
   public void resume() {
     super.resume();
     sendVirtualStickDataTimer = new Timer();
+    sendVirtualStickDataBlock = new TimerTask() {
+      @Override
+      public void run() {
+        FlightController flightController = ((Aircraft)DJISDKManager.getInstance().getProduct()).getFlightController();
+        double pitch = baseVirtualStickControlValues.get(VirtualStickControl.pitch) + virtualStickAdjustmentValues.get(VirtualStickControl.pitch);
+        double roll = baseVirtualStickControlValues.get(VirtualStickControl.roll) + virtualStickAdjustmentValues.get(VirtualStickControl.roll);
+        double yaw = baseVirtualStickControlValues.get(VirtualStickControl.yaw) + virtualStickAdjustmentValues.get(VirtualStickControl.yaw);
+        double verticalThrottle = baseVirtualStickControlValues.get(VirtualStickControl.verticalThrottle) + virtualStickAdjustmentValues.get(VirtualStickControl.verticalThrottle);
+
+        flightController.sendVirtualStickFlightControlData(new FlightControlData(
+                // In the coordinate system we use for the drone, roll and pitch are swapped
+                (float)roll,
+                (float)pitch,
+                (float)yaw,
+                (float)verticalThrottle
+        ), null);
+      }
+    };
     sendVirtualStickDataTimer.scheduleAtFixedRate(sendVirtualStickDataBlock, 0, 50);
   }
 
   @Override
   public void stop() {
-
+    if (sendVirtualStickDataTimer != null) {
+      sendVirtualStickDataTimer.cancel();
+    }
+    if (endTriggerTimer != null) {
+      endTriggerTimer.cancel();
+    }
+    cleanUp(new CompletionCallback() {
+      @Override
+      public void complete(@Nullable DJIError djiError) {
+        if (djiError != null) {
+          Log.i("REACT", djiError.getDescription());
+        }
+      }
+    });
   }
 
   @Override
   public DJIError checkValidity() {
     return null;
+  }
+
+  @Override
+  protected void startListen() {
+
+  }
+
+  @Override
+  protected void stopListen() {
+
   }
 
   @Override
