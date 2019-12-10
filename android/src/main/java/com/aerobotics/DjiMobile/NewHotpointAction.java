@@ -100,12 +100,17 @@ public class NewHotpointAction extends TimelineElement implements HotpointMissio
         LatLng centerLL = new LatLng(center.getLatitude(), center.getLongitude());
 
         double currentHeading = (((int)SphericalUtil.computeHeading(centerLL, new LatLng(latitude,longitude))) + 360) % 360;
-        double diff = Math.abs((int)currentHeading-this.angle);
+ 
+        if (this.isRunning){
+            double angleDiff = this.mission.isClockwise() ? 
+                (360+this.angle-currentHeading)%360 : 
+                (360+currentHeading-this.angle)%360;
 
-        System.out.println("dronecha NewHotpoint current heading: " + currentHeading + " target angle: " + this.angle + " diff: " + diff);
+            System.out.println("dronecha NewHotpoint current heading: " + currentHeading + " target angle: " + this.angle + " diff: " + angleDiff);
 
-        if ((diff < 10.0) && this.isRunning){
-          this.stop();
+            if (angleDiff > 0 && angleDiff < 10){
+                this.stop();
+            }
         }
     }
 
@@ -113,7 +118,7 @@ public class NewHotpointAction extends TimelineElement implements HotpointMissio
     public void stop() {
         System.out.println("NewHotpoint stop");
         this.isRunning = false;
-        NewHotpointAction that = this;
+        final NewHotpointAction that = this;
 
         missionControl.getHotpointMissionOperator().stop(new CommonCallbacks.CompletionCallback() {
             @Override
@@ -124,6 +129,8 @@ public class NewHotpointAction extends TimelineElement implements HotpointMissio
                     System.out.println("dronecha NewHotPoint hotpoint mission stop error: " + djiError);
                     KeyManager.getInstance().removeListener(aircraftLatitudeListener);
                     KeyManager.getInstance().removeListener(aircraftLongitudeListener);
+                    missionControl.getHotpointMissionOperator().removeListener(that);
+                    missionControl.onFinishWithError(that, djiError);
                 }
             }
         });
