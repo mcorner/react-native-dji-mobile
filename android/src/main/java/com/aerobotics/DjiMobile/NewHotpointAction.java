@@ -89,7 +89,7 @@ public class NewHotpointAction extends TimelineElement implements HotpointMissio
                 } else{
                     System.out.println("dronecha NewHotPoint hotpoint mission start error: " + djiError);
                     missionControl.getHotpointMissionOperator().removeListener(that);
-                    missionControl.onFinishWithError(that, error);
+                    missionControl.onFinishWithError(that, djiError);
                 }
             }
         });
