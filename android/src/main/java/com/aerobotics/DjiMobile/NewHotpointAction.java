@@ -88,6 +88,8 @@ public class NewHotpointAction extends TimelineElement implements HotpointMissio
                     KeyManager.getInstance().addListener(aircraftLongitudeKey, aircraftLongitudeListener);
                 } else{
                     System.out.println("dronecha NewHotPoint hotpoint mission start error: " + djiError);
+                    missionControl.getHotpointMissionOperator().removeListener(that);
+                    missionControl.onFinishWithError(that, error);
                 }
             }
         });
