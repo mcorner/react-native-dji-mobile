@@ -82,12 +82,12 @@ public class NewHotpointAction extends TimelineElement implements HotpointMissio
             @Override
             public void onResult(DJIError djiError) {
                 if (djiError == null) {
-                    System.out.println("NewHotPoint hotpoint mission started");
+                    System.out.println("dronecha NewHotPoint hotpoint mission started");
                     isRunning = true;
                     KeyManager.getInstance().addListener(aircraftLatitudeKey, aircraftLatitudeListener);
                     KeyManager.getInstance().addListener(aircraftLongitudeKey, aircraftLongitudeListener);
                 } else{
-                    System.out.println("NewHotPoint hotpoint mission start error: " + djiError);
+                    System.out.println("dronecha NewHotPoint hotpoint mission start error: " + djiError);
                 }
             }
         });
@@ -100,7 +100,7 @@ public class NewHotpointAction extends TimelineElement implements HotpointMissio
         double currentHeading = (((int)SphericalUtil.computeHeading(centerLL, new LatLng(latitude,longitude))) + 360) % 360;
         double diff = Math.abs((int)currentHeading-this.angle);
 
-        System.out.println("NewHotpoint current heading: " + currentHeading + " target angle: " + this.angle + " diff: " + diff);
+        System.out.println("dronecha NewHotpoint current heading: " + currentHeading + " target angle: " + this.angle + " diff: " + diff);
 
         if ((diff < 10.0) && this.isRunning){
           this.stop();
@@ -117,9 +117,9 @@ public class NewHotpointAction extends TimelineElement implements HotpointMissio
             @Override
             public void onResult(DJIError djiError) {
                 if (djiError == null) {
-                    System.out.println("NewHotPoint hotpoint mission stop completed");
+                    System.out.println("dronecha NewHotPoint hotpoint mission stop completed");
                 } else{
-                    System.out.println("NewHotPoint hotpoint mission stop error: " + djiError);
+                    System.out.println("dronecha NewHotPoint hotpoint mission stop error: " + djiError);
                     KeyManager.getInstance().removeListener(aircraftLatitudeListener);
                     KeyManager.getInstance().removeListener(aircraftLongitudeListener);
                 }
@@ -149,10 +149,10 @@ public class NewHotpointAction extends TimelineElement implements HotpointMissio
 
     public void onExecutionFinish(DJIError error){
         if (error != null){
-            System.out.println("NewHotPoint hotpoint onExecutionFinish ERROR: " + error);
+            System.out.println("dronecha NewHotPoint hotpoint onExecutionFinish ERROR: " + error);
 
         } else{
-            System.out.println("NewHotPoint hotpoint onExecutionFinish");
+            System.out.println("dronecha NewHotPoint hotpoint onExecutionFinish");
         }
         KeyManager.getInstance().removeListener(aircraftLatitudeListener);
         KeyManager.getInstance().removeListener(aircraftLongitudeListener);
