@@ -77,7 +77,7 @@ public class NewHotpointAction extends TimelineElement implements HotpointMissio
         System.out.println("dronecha NewHotPoint hpo state: " + missionControl.getHotpointMissionOperator().getCurrentState());
 
         missionControl.getHotpointMissionOperator().addListener(this);
-        NewHotpointAction that = this;
+        final NewHotpointAction that = this;
         missionControl.getHotpointMissionOperator().startMission(mission, new CommonCallbacks.CompletionCallback() {
             @Override
             public void onResult(DJIError djiError) {
