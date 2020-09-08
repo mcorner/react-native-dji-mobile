@@ -112,10 +112,10 @@ public class DJIMobile extends ReactContextBaseJavaModule {
       }
 
       @override
-      public void onProductChanged(DJIBaseProduct djiBaseProduct, DJIBaseProduct djiBaseProduct1) {
+      public void onProductChanged(DJIBaseProduct djiBaseProduct) {
         // TODO
       }
-      
+
       @Override
       public void onInitProcess(DJISDKInitEvent djisdkInitEvent, int i) {
 
