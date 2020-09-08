@@ -115,6 +115,11 @@ public class DJIMobile extends ReactContextBaseJavaModule {
       public void onInitProcess(DJISDKInitEvent djisdkInitEvent, int i) {
 
       }
+
+      @Override
+      public void onDatabaseDownloadProgress(long current, long total) {
+
+      }
     });
   }
 
