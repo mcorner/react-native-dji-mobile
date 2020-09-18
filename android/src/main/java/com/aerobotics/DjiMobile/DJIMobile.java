@@ -42,6 +42,7 @@ import dji.sdk.sdkmanager.DJISDKManager;
 
 import com.aerobotics.DjiMobile.DroneVideo.DroneVideo;
 
+@ReactModule(name = "DJIMobile")
 public class DJIMobile extends ReactContextBaseJavaModule {
 
   private final ReactApplicationContext reactContext;
