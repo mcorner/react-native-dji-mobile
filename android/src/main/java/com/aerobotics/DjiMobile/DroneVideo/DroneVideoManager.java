@@ -18,7 +18,7 @@ public class DroneVideoManager extends SimpleViewManager<DroneVideo> {
   protected DroneVideo createViewInstance(ThemedReactContext reactContext) {
     DroneVideo view = new DroneVideo(reactContext);
 
-    DJIMobile mobileModule = context.getNativeModule(DJIMobile.class);
+    DJIMobile mobileModule = reactContext.getNativeModule(DJIMobile.class);
     mobileModule.setVideo(view);
 
     return view;
