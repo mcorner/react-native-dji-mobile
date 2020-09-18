@@ -83,7 +83,7 @@ public class DroneVideo extends RelativeLayout implements TextureView.SurfaceTex
     // TODO!!!
     return;
 
-    String root = Environment.getExternalStorageDirectory().toString();
+/*    String root = Environment.getExternalStorageDirectory().toString();
 
     // the directory where the signature will be saved
     File myDir = new File(root + "/images");
@@ -113,6 +113,6 @@ public class DroneVideo extends RelativeLayout implements TextureView.SurfaceTex
       } catch (Exception e) {
         e.printStackTrace();
       }
-    }
+    }*/
   }
 }
