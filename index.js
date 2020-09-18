@@ -4,7 +4,6 @@ import {
   Platform,
   NativeModules,
   PermissionsAndroid,
-  requireNativeComponent,
 } from 'react-native';
 
 import {
@@ -212,5 +211,4 @@ export {
   DJIMissionControl,
   CameraControl,
   DJIMediaControl,
-//  requireNativeComponent('DroneVideo')
 };

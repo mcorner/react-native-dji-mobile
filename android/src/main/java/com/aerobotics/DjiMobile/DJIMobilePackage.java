@@ -12,7 +12,7 @@ import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.uimanager.ViewManager;
 import com.facebook.react.bridge.JavaScriptModule;
 
-//import com.aerobotics.DjiMobile.DroneVideo.DroneVideoManager;
+import com.aerobotics.DjiMobile.DroneVideo.DroneVideoManager;
 
 public class DJIMobilePackage implements ReactPackage {
   @Override
@@ -33,7 +33,7 @@ public class DJIMobilePackage implements ReactPackage {
   @Override
   public List<ViewManager> createViewManagers(ReactApplicationContext reactContext) {
     return Arrays.<ViewManager>asList(
-//      new DroneVideoManager()
+      new DroneVideoManager()
     );  
   }
 }
