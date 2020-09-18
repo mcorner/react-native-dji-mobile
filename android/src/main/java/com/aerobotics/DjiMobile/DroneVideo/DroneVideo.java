@@ -74,4 +74,45 @@ public class DroneVideo extends RelativeLayout implements TextureView.SurfaceTex
     super.onDetachedFromWindow();
     cleanUpVideoFeed();
   }
+
+  /**
+    * save the signature to an sd card directory
+  */
+  void saveImage() {
+    Log.d("DJIMobile", "Save file-======");
+    // TODO!!!
+    return;
+
+    String root = Environment.getExternalStorageDirectory().toString();
+
+    // the directory where the signature will be saved
+    File myDir = new File(root + "/images");
+
+    // make the directory if it does not exist yet
+    if (!myDir.exists()) {
+      myDir.mkdirs();
+    }
+
+    // set the file name of your choice
+    String fname = "capture.png";
+
+    try {
+      Log.d("React Signature", "Save file-======:" + saveFileInExtStorage);
+      // save the signature
+      if (saveFileInExtStorage) {
+        FileOutputStream out = new FileOutputStream(file);
+
+        ///???
+
+
+        WritableMap event = Arguments.createMap();
+        event.putString("pathName", file.getAbsolutePath());
+        event.putString("encoded", encoded);
+        ReactContext reactContext = (ReactContext) getContext();
+        reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(getId(), "topChange", event);
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+    }
+  }
 }

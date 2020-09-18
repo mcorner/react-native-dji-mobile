@@ -55,6 +55,7 @@ public class DJIMobile extends ReactContextBaseJavaModule {
   private Handler handler;
   private FileObserver flightLogObserver;
   private EventSender eventSender;
+  private DroneVideo video;
 
   public DJIMobile(ReactApplicationContext reactContext) {
     super(reactContext);
@@ -126,6 +127,20 @@ public class DJIMobile extends ReactContextBaseJavaModule {
 
       }
     });
+  }
+
+  public void setVideo(DroneVideo view){
+    this.video = view;
+  }
+  
+  @ReactMethod
+  public void saveImage(final Promise promise){
+    if (this.video){
+      this.video.saveImage();
+      promise.resolve("TODO");
+    } else {
+      promise.reject("NO VIDEO VIEW");
+    }
   }
 
   @ReactMethod
