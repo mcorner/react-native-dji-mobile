@@ -3,7 +3,7 @@ package com.aerobotics.DjiMobile.DroneVideo;
 import com.facebook.react.uimanager.SimpleViewManager;
 import com.facebook.react.uimanager.ThemedReactContext;
 
-import package com.aerobotics.DjiMobile.DJIMobile;
+import com.aerobotics.DjiMobile.DJIMobile;
 
 public class DroneVideoManager extends SimpleViewManager<DroneVideo> {
 
