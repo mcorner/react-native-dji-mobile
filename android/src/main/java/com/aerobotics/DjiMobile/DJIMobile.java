@@ -40,6 +40,7 @@ import dji.sdk.products.Aircraft;
 import dji.sdk.sdkmanager.DJISDKInitEvent;
 import dji.sdk.sdkmanager.DJISDKManager;
 
+import com.aerobotics.DjiMobile.DroneVideo.DroneVideo;
 
 public class DJIMobile extends ReactContextBaseJavaModule {
 
