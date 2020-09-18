@@ -136,7 +136,7 @@ public class DJIMobile extends ReactContextBaseJavaModule {
   
   @ReactMethod
   public void saveImage(final Promise promise){
-    if (this.video){
+    if (this.video != null){
       this.video.saveImage();
       promise.resolve("TODO");
     } else {

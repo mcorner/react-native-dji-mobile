@@ -78,7 +78,7 @@ public class DroneVideo extends RelativeLayout implements TextureView.SurfaceTex
   /**
     * save the signature to an sd card directory
   */
-  void saveImage() {
+  public void saveImage() {
     Log.d("DJIMobile", "Save file-======");
     // TODO!!!
     return;
