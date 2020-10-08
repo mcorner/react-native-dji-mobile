@@ -15,8 +15,8 @@ import com.facebook.react.module.annotations.ReactModule;
 import android.os.FileObserver;
 import android.os.Handler;
 import android.os.Looper;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import android.util.Log;
 
 import java.util.HashMap;
