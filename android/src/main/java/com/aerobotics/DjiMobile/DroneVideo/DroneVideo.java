@@ -260,9 +260,9 @@ public class DroneVideo extends RelativeLayout implements TextureView.SurfaceTex
           Log.d("DJIMobile", "screenShot to path: " + path);
           outputFile.flush();
           outputFile.close();
-          FileDescriptor fd = outputFile.getFD();
+/*          FileDescriptor fd = outputFile.getFD();
           fd.sync();
-
+*/
           File from      = new File(path);
           File to        = new File(finalPath);
 
