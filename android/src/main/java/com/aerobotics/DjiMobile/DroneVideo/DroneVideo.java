@@ -10,6 +10,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import java.io.File;
+import java.io.FileDescriptor;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -261,6 +262,7 @@ public class DroneVideo extends RelativeLayout implements TextureView.SurfaceTex
           outputFile.close();
           FileDescriptor fd = outputFile.getFD();
           fd.sync();
+
           File from      = new File(path);
           File to        = new File(finalPath);
 
