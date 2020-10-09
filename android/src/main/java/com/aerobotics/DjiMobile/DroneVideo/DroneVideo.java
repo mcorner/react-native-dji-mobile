@@ -97,20 +97,19 @@ public class DroneVideo extends RelativeLayout implements TextureView.SurfaceTex
     cleanUpVideoFeed();
   }
 
-  /**
-    * save the signature to an sd card directory
-  */
-  public void saveImage() {
-    Log.d("DJIMobile", "Save file-======");
+  public void startImageCapture() {
+    Log.d("DJIMobile", "Start Image Capture");
     // This will pause the live view while we capture
     codecManager.enabledYuvData(true);
     codecManager.setYuvDataCallback(this);
-
-
-    // TODO: RESET after capture to reenable live view
-//    codecManager.enabledYuvData(false);
- //   mCodecManager.setYuvDataCallback(null);
   };
+
+  public void stopImageCapture() {
+    Log.d("DJIMobile", "Stop Image Capture");
+    codecManager.enabledYuvData(false);
+    mCodecManager.setYuvDataCallback(null);
+  };
+
 
 
 /*    String root = Environment.getExternalStorageDirectory().toString();
@@ -149,7 +148,7 @@ public class DroneVideo extends RelativeLayout implements TextureView.SurfaceTex
     public void onYuvDataReceived(final MediaFormat format, final ByteBuffer yuvFrame, int dataSize, final int width, final int height) {
         //In this demo, we test the YUV data by saving it into JPG files.
         //DJILog.d(TAG, "onYuvDataReceived " + dataSize);
-        if (count++ % 30 == 0 && yuvFrame != null) {
+        if (count++ % 10 == 0 && yuvFrame != null) {
             final byte[] bytes = new byte[dataSize];
             yuvFrame.get(bytes);
             //DJILog.d(TAG, "onYuvDataReceived2 " + dataSize);
@@ -195,7 +194,7 @@ public class DroneVideo extends RelativeLayout implements TextureView.SurfaceTex
         yuvFrame[length + 2 * i] = u[i];
         yuvFrame[length + 2 * i + 1] = v[i];
     }
-    screenShot(yuvFrame,Environment.getExternalStorageDirectory() + "/DJI_ScreenShot", width, height);
+    screenShot(yuvFrame,getFilesDir() + "/images", width, height);
   }
 
   private void newSaveYuvDataToJPEG420P(byte[] yuvFrame, int width, int height) {
@@ -215,7 +214,7 @@ public class DroneVideo extends RelativeLayout implements TextureView.SurfaceTex
         yuvFrame[length + 2 * i] = v[i];
         yuvFrame[length + 2 * i + 1] = u[i];
     }
-    screenShot(yuvFrame, Environment.getExternalStorageDirectory() + "/DJI_ScreenShot", width, height);
+    screenShot(yuvFrame, getFilesDir() + "/images", width, height);
   }
       /**
      * Save the buffered data into a JPG image file
@@ -231,11 +230,11 @@ public class DroneVideo extends RelativeLayout implements TextureView.SurfaceTex
               height,
               null);
       OutputStream outputFile;
-      final String path = dir + "/ScreenShot_" + System.currentTimeMillis() + ".jpg";
+      final String path = dir + "/" + System.currentTimeMillis() + ".jpg";
       try {
           outputFile = new FileOutputStream(new File(path));
       } catch (FileNotFoundException e) {
-          Log.e("REACT", "test screenShot: new bitmap output file error: " + e);
+          Log.e("DJIMobile", "test screenShot: new bitmap output file error: " + e);
           return;
       }
       if (outputFile != null) {
@@ -247,7 +246,7 @@ public class DroneVideo extends RelativeLayout implements TextureView.SurfaceTex
       try {
           outputFile.close();
       } catch (IOException e) {
-          Log.e("REACT", "test screenShot: compress yuv image error: " + e);
+          Log.e("DJIMobile", "test screenShot: compress yuv image error: " + e);
           e.printStackTrace();
       }
 /*      runOnUiThread(new Runnable() {

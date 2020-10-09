@@ -204,9 +204,14 @@ const DJIMobileWrapper = {
     return await DJIMobile.setLandingProtectionEnabled(enabled);
   },
 
-  saveImage: async () => {
-    return await DJIMobile.saveImage();
+  startImageCapture: async () => {
+    return await DJIMobile.startImageCapture();
   }
+
+  stopImageCapture: async () => {
+    return await DJIMobile.stopImageCapture();
+  }
+
 };
 
 export default DJIMobileWrapper;
