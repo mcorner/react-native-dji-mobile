@@ -148,6 +148,8 @@ public class DroneVideo extends RelativeLayout implements TextureView.SurfaceTex
     public void onYuvDataReceived(final MediaFormat format, final ByteBuffer yuvFrame, int dataSize, final int width, final int height) {
         //In this demo, we test the YUV data by saving it into JPG files.
         //DJILog.d(TAG, "onYuvDataReceived " + dataSize);
+        Log.d("DJIMobile", "onYuvDataReceived");
+
         if (count++ % 10 == 0 && yuvFrame != null) {
             final byte[] bytes = new byte[dataSize];
             yuvFrame.get(bytes);
@@ -178,6 +180,8 @@ public class DroneVideo extends RelativeLayout implements TextureView.SurfaceTex
   
 
   private void newSaveYuvDataToJPEG(byte[] yuvFrame, int width, int height){
+    Log.d("DJIMobile", "newSaveYuvDataToJPEG");
+
     if (yuvFrame.length < width * height) {
         //DJILog.d(TAG, "yuvFrame size is too small " + yuvFrame.length);
         return;
@@ -198,6 +202,8 @@ public class DroneVideo extends RelativeLayout implements TextureView.SurfaceTex
   }
 
   private void newSaveYuvDataToJPEG420P(byte[] yuvFrame, int width, int height) {
+    Log.d("DJIMobile", "newSaveYuvDataToJPEG420P");
+
     if (yuvFrame.length < width * height) {
         return;
     }
@@ -220,6 +226,9 @@ public class DroneVideo extends RelativeLayout implements TextureView.SurfaceTex
      * Save the buffered data into a JPG image file
      */
     private void screenShot(byte[] buf, String shotDir, int width, int height) {
+
+      Log.d("DJIMobile", "screenShot to dir: " + shotDir);
+
       File dir = new File(shotDir);
       if (!dir.exists() || !dir.isDirectory()) {
           dir.mkdirs();
@@ -244,6 +253,8 @@ public class DroneVideo extends RelativeLayout implements TextureView.SurfaceTex
                   height), 100, outputFile);
       }
       try {
+          Log.d("DJIMobile", "screenShot to path: " + path);
+
           outputFile.close();
       } catch (IOException e) {
           Log.e("DJIMobile", "test screenShot: compress yuv image error: " + e);
