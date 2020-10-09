@@ -206,11 +206,11 @@ const DJIMobileWrapper = {
 
   startImageCapture: async () => {
     return await DJIMobile.startImageCapture();
-  }
+  },
 
   stopImageCapture: async () => {
     return await DJIMobile.stopImageCapture();
-  }
+  },
 
 };
 
