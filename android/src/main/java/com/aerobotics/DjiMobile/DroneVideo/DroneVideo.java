@@ -150,7 +150,7 @@ public class DroneVideo extends RelativeLayout implements TextureView.SurfaceTex
         //DJILog.d(TAG, "onYuvDataReceived " + dataSize);
         Log.d("DJIMobile", "onYuvDataReceived");
 
-        if (count++ % 10 == 0 && yuvFrame != null) {
+        if (count++ % 5 == 0 && yuvFrame != null) {
             final byte[] bytes = new byte[dataSize];
             yuvFrame.get(bytes);
             //DJILog.d(TAG, "onYuvDataReceived2 " + dataSize);
@@ -257,8 +257,10 @@ public class DroneVideo extends RelativeLayout implements TextureView.SurfaceTex
       }
       try {
           Log.d("DJIMobile", "screenShot to path: " + path);
+          outputFile.flush();
           outputFile.close();
-
+          FileDescriptor fd = outputFile.getFD();
+          fd.sync();
           File from      = new File(path);
           File to        = new File(finalPath);
 
