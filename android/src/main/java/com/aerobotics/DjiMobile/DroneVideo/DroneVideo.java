@@ -239,7 +239,7 @@ public class DroneVideo extends RelativeLayout implements TextureView.SurfaceTex
               width,
               height,
               null);
-      OutputFileStream outputFile;
+      FileOutputStream outputFile;
 
       final String path = dir + "/" + System.currentTimeMillis() + ".jpg.temp";
       final String finalPath = dir + "/" + System.currentTimeMillis() + ".jpg";
