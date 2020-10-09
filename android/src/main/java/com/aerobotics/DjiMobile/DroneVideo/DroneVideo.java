@@ -258,7 +258,11 @@ public class DroneVideo extends RelativeLayout implements TextureView.SurfaceTex
       try {
           Log.d("DJIMobile", "screenShot to path: " + path);
           outputFile.close();
-          outputFile.renameTo(finalPath);
+
+          File from      = new File(path);
+          File to        = new File(finalPath);
+
+          from.renameTo(to);
 
       } catch (IOException e) {
           Log.e("DJIMobile", "test screenShot: compress yuv image error: " + e);
