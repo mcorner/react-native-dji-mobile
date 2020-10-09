@@ -239,7 +239,10 @@ public class DroneVideo extends RelativeLayout implements TextureView.SurfaceTex
               height,
               null);
       OutputStream outputFile;
-      final String path = dir + "/" + System.currentTimeMillis() + ".jpg";
+
+      final String path = dir + "/" + System.currentTimeMillis() + ".jpg.temp";
+      final String finalPath = dir + "/" + System.currentTimeMillis() + ".jpg";
+
       try {
           outputFile = new FileOutputStream(new File(path));
       } catch (FileNotFoundException e) {
@@ -254,8 +257,9 @@ public class DroneVideo extends RelativeLayout implements TextureView.SurfaceTex
       }
       try {
           Log.d("DJIMobile", "screenShot to path: " + path);
-
           outputFile.close();
+          outputFile.renameTo(finalPath);
+
       } catch (IOException e) {
           Log.e("DJIMobile", "test screenShot: compress yuv image error: " + e);
           e.printStackTrace();
