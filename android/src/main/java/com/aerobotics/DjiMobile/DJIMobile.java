@@ -140,7 +140,7 @@ public class DJIMobile extends ReactContextBaseJavaModule {
   public void startImageCapture(final Promise promise){
     if (this.video != null){
       this.video.startImageCapture();
-      promise.resolve();
+      promise.resolve('ok');
     } else {
       promise.reject("NO VIDEO VIEW");
     }
@@ -150,7 +150,7 @@ public class DJIMobile extends ReactContextBaseJavaModule {
   public void stopImageCapture(final Promise promise){
     if (this.video != null){
       this.video.stopImageCapture();
-      promise.resolve();
+      promise.resolve('ok');
     } else {
       promise.reject("NO VIDEO VIEW");
     }

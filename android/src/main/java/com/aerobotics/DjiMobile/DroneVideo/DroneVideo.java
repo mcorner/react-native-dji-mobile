@@ -107,7 +107,7 @@ public class DroneVideo extends RelativeLayout implements TextureView.SurfaceTex
   public void stopImageCapture() {
     Log.d("DJIMobile", "Stop Image Capture");
     codecManager.enabledYuvData(false);
-    mCodecManager.setYuvDataCallback(null);
+    codecManager.setYuvDataCallback(null);
   };
 
 
@@ -194,7 +194,7 @@ public class DroneVideo extends RelativeLayout implements TextureView.SurfaceTex
         yuvFrame[length + 2 * i] = u[i];
         yuvFrame[length + 2 * i + 1] = v[i];
     }
-    screenShot(yuvFrame,getFilesDir() + "/images", width, height);
+    screenShot(yuvFrame, getContext().getFilesDir() + "/images", width, height);
   }
 
   private void newSaveYuvDataToJPEG420P(byte[] yuvFrame, int width, int height) {
@@ -214,7 +214,7 @@ public class DroneVideo extends RelativeLayout implements TextureView.SurfaceTex
         yuvFrame[length + 2 * i] = v[i];
         yuvFrame[length + 2 * i + 1] = u[i];
     }
-    screenShot(yuvFrame, getFilesDir() + "/images", width, height);
+    screenShot(yuvFrame, getContext().getFilesDir() + "/images", width, height);
   }
       /**
      * Save the buffered data into a JPG image file
