@@ -100,6 +100,7 @@ public class DroneVideo extends RelativeLayout implements TextureView.SurfaceTex
 
   public void startImageCapture() {
     Log.d("DJIMobile", "Start Image Capture");
+    count = 0;
     // This will pause the live view while we capture
     codecManager.enabledYuvData(true);
     codecManager.setYuvDataCallback(this);
@@ -151,7 +152,7 @@ public class DroneVideo extends RelativeLayout implements TextureView.SurfaceTex
         //DJILog.d(TAG, "onYuvDataReceived " + dataSize);
         Log.d("DJIMobile", "onYuvDataReceived");
 
-        if (count++ % 5 == 0 && yuvFrame != null) {
+        if (count++ % 10 == 0 && yuvFrame != null) {
             final byte[] bytes = new byte[dataSize];
             yuvFrame.get(bytes);
             //DJILog.d(TAG, "onYuvDataReceived2 " + dataSize);
