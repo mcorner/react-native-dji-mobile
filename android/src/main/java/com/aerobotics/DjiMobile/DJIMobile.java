@@ -9,13 +9,14 @@ import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
+import com.facebook.react.module.annotations.ReactModule;
 
 
 import android.os.FileObserver;
 import android.os.Handler;
 import android.os.Looper;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import android.util.Log;
 
 import java.util.HashMap;
@@ -40,7 +41,9 @@ import dji.sdk.products.Aircraft;
 import dji.sdk.sdkmanager.DJISDKInitEvent;
 import dji.sdk.sdkmanager.DJISDKManager;
 
+import com.aerobotics.DjiMobile.DroneVideo.DroneVideo;
 
+@ReactModule(name = "DJIMobile")
 public class DJIMobile extends ReactContextBaseJavaModule {
 
   private final ReactApplicationContext reactContext;
@@ -55,6 +58,7 @@ public class DJIMobile extends ReactContextBaseJavaModule {
   private Handler handler;
   private FileObserver flightLogObserver;
   private EventSender eventSender;
+  private DroneVideo video;
 
   public DJIMobile(ReactApplicationContext reactContext) {
     super(reactContext);
@@ -127,6 +131,31 @@ public class DJIMobile extends ReactContextBaseJavaModule {
       }
     });
   }
+
+  public void setVideo(DroneVideo view){
+    this.video = view;
+  }
+  
+  @ReactMethod
+  public void startImageCapture(final Promise promise){
+    if (this.video != null){
+      this.video.startImageCapture();
+      promise.resolve("ok");
+    } else {
+      promise.reject("NO VIDEO VIEW");
+    }
+  }
+
+  @ReactMethod
+  public void stopImageCapture(final Promise promise){
+    if (this.video != null){
+      this.video.stopImageCapture();
+      promise.resolve("ok");
+    } else {
+      promise.reject("NO VIDEO VIEW");
+    }
+  }
+
 
   @ReactMethod
   public void getFileList(final Promise promise) {
