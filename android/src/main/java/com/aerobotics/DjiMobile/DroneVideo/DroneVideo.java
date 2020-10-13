@@ -170,7 +170,7 @@ public class DroneVideo extends RelativeLayout implements TextureView.SurfaceTex
   }
   
   private void newSaveYuvDataToJPEG420P(byte[] yuvFrame, int width, int height) {
-    Log.d("DJIMobile", "newSaveYuvDataToJPEG420P");
+//    Log.d("DJIMobile", "newSaveYuvDataToJPEG420P");
     
     if (yuvFrame.length < width * height) {
       return;
